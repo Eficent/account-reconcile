@@ -16,6 +16,8 @@
         'report/summary_report.xml',
         'report/report.xml',
         'view/account_account_view.xml',
+        'view/account_bank_statement.xml',
+        'wizard/account_bank_unreconcile_view.xml',
     ],
     'installable': True,
 }
