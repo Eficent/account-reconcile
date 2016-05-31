@@ -46,14 +46,32 @@ class SummaryReport(models.TransientModel):
     def process_wiz(self):
         context = dict(self._context)
         bank_stmt_obj = self.env['account.bank.statement']
-        banks = bank_stmt_obj.browse(context.get('active_ids'))
+        currency_obj = self.env['res.currency']
+        statement = bank_stmt_obj.browse(context.get('active_ids'))
         lines = []
         for line in self.line_ids:
+            amount = 0.0
+            if line.debit > 0:
+                amount = line.debit
+            elif line.credit > 0:
+                amount = -line.credit
+            if line.amount_currency:
+                if line.company_id.currency_id.id != statement.currency.id:
+                    amount = currency_obj.compute(line.currency_id.id,
+                                                  statement.currency.id,
+                                                  line.amount_currency)
+            elif (line.invoice and line.invoice.currency_id.id !=
+                statement.currency.id):
+                amount = currency_obj.compute(line.invoice.currency_id.id,
+                                              statement.currency.id, amount)
             lines.append((0, 0, {
-                'name': line.name,
+                'name': line.name or '?',
                 'ref': line.ref,
                 'partner_id': line.partner_id.id,
-                'amount': line.credit > 0 and (line.credit * -1) or line.debit,
+                'amount': amount,
+                'date': line.date,
+                'amount_currency': line.amount_currency,
+                'currency_id': line.currency_id.id,
             }))
-        banks.write({'line_ids': lines})
+        statement.write({'line_ids': lines})
         return True
