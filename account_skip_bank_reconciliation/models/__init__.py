@@ -3,3 +3,4 @@
 from . import account_account
 from . import reconciliation_widget
 from . import account_reconcile_model
+from . import account_journal

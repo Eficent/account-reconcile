@@ -17,6 +17,10 @@ class AccountReconciliation(models.AbstractModel):
             excluded_ids=excluded_ids, search_str=search_str)
         domain = expression.AND([domain, [
             ("account_id.exclude_bank_reconcile", "!=", True)]])
+        if st_line.journal_id.reconcile_account_ids:
+            domain = expression.AND([domain, [
+                ("account_id", "in",
+                 st_line.journal_id.reconcile_account_ids.ids)]])
         return domain
 
     @api.model
